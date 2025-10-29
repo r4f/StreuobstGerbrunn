@@ -52,6 +52,8 @@ fruit_images = [
     "quince",
     "fig",
     "Circled_dot",
+    "Circled_dot_gray",
+    "Tree_from_above",
 ]
 for (const fruit of fruit_images) {
   fetch(`images/${fruit}.svg`)
@@ -77,60 +79,73 @@ function addGeoJsonLayer(geoJSONcontent) {
 	    'data': geoJSONcontent
 	});
 	
-	map.addLayer({
-	    "id":"tree-size",
-	    "type":"symbol",
-	    'source': 'uploaded-source',
-	    'layout': {
-	       	"icon-image": [
-		    "step",
-	       	    ["get", "circumference"],
-		    "trunk10",
-		    0.10, "trunk20",
-		    0.20, "trunk30",
-		    0.30, "trunk40",
-		    0.40, "trunk50",
-		    0.50, "trunk60",
-		    0.60, "trunk70",
-		    0.70, "trunk80",
-		    0.80, "trunk90",
-		    0.90, "trunk100",
-		],
-	       	"icon-anchor": "center",
-	       	//"icon-size": {"base": 1, "stops": [[3, 0.7], [10, 1.0], [20, 1.2]]},
-           	"icon-size": {"base": 1, "stops": [[18, 0.3], [20, 0.4]]},
-	//"icon-size": 0.2,
-	       	  //[["get", "circumference"], 1],
-	       	  //"max",
-	       	  //0.5,
-	       	  //["get", "circumference"],
-	       	//],
-	       	"icon-allow-overlap": true,
-	       	"visibility":"visible"
-	    },
-      "paint": {
-        "icon-translate": [0, 30],
-      },
-      "minzoom":19,
-      'filter': [
-        "all",
-        ['has', 'circumference'],
-        ['==', '$type', 'Point']
-      ]
-	});
+
+  map.addLayer({
+    "id":"tree-size-circle",
+    "type":"symbol",
+    'source': 'uploaded-source',
+    'layout': {
+      "icon-image": "Tree_from_above",
+      "icon-size": [
+        "interpolate", ["linear"], ["zoom"],
+        17, ["*", ["max", ["get", "circumference"], 0.25], 0.3],
+        21, ["*", ["max", ["get", "circumference"], 0.25], 2.7],
+        23, ["*", ["max", ["get", "circumference"], 0.25], 3.2]
+      ],
+      "icon-anchor": "center",
+      "icon-allow-overlap": true,
+      "visibility":"visible"
+    },
+	  'paint': {
+      "icon-opacity": 1,
+    },
+     "minzoom":17,
+     'filter': ['has', 'circumference'],
+  });
 
 	map.addLayer({
-	    "id":"trees",
+	    "id":"trees-with-circumference",
 	    "type":"symbol",
 	    'source': 'uploaded-source',
 	    'layout': {
-        "icon-image": ["coalesce", ["get", "_image"], "Circled_dot"],
-        "icon-size": {"base": 1, "stops": [[3, 0.3], [10, 0.6], [20, 1.0]]},
+        "icon-image": ["coalesce", ["get", "_image"], "Circled_dot_gray"],
+        "icon-size": [
+          "interpolate", ["linear"], ["zoom"],
+          3, 0.3,
+          10, 0.6,
+          20, 1.0,
+        ],
+	      "icon-allow-overlap": true,
+        "visibility":"visible"
+	    },
+	    'paint': {
+        "icon-opacity": [
+          "interpolate", ["linear"], ["zoom"],
+          17, 1.0,
+          18, 0.6,
+          24, 0.1,
+        ]
+      },
+      "minzoom":3,
+      'filter': ["all", ['has', 'circumference'], ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]]
+	});
+	map.addLayer({
+	    "id":"trees-without-circumference",
+	    "type":"symbol",
+	    'source': 'uploaded-source',
+	    'layout': {
+        "icon-image": ["coalesce", ["get", "_image"], "Circled_dot_gray"],
+        "icon-size": [
+          "interpolate", ["linear"], ["zoom"],
+          3, 0.3,
+          10, 0.6,
+          20, 1.0,
+        ],
 	      "icon-allow-overlap": true,
         "visibility":"visible"
 	    },
       "minzoom":3,
-	    'filter': ['==', '$type', 'Point']
+      'filter': ["!", ['has', 'circumference']]
 	});
 
 	map.addLayer({
@@ -144,17 +159,21 @@ function addGeoJsonLayer(geoJSONcontent) {
         "text-offset": [
           0,
           -2 
+          //0
         ],
 	      "text-allow-overlap": true,
         "visibility":"visible",
 	    },
 	    'paint': {
-	    	"text-color":"#333",
+	    	"text-color":"#111",
 	    },
-      "minzoom":15,
-	    'filter': ['==', '$type', 'Point']
+      "minzoom":17,
+	    //'filter': ['==', '$type', 'Point']
+      'filter': ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]
 	});
+
 }
+
 
 map.on('click', 'trees', function(e) {
     // e.features contains all features at the click location

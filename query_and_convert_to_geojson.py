@@ -9,7 +9,9 @@ geojson_result_file="deploy/trees.geojson"
 
 query_content = """
     [out:json][timeout:25];
-    node(49.768,9.972,49.794,10.04)[natural=tree];
+    node(49.768,9.972,49.794,10.04)[natural=tree]
+    //[operator='Obst- und Gartenbauverein Gerbrunn']
+    ;
     out;
 """
 
@@ -201,6 +203,21 @@ fruits = [
         image=Image.Fallback_,
         conditions=[
             {Tag.Genus: "Sorbus"},
+        ],
+    ),
+    Fruit(
+        display_name="Schwarzer Holunder",
+        image=Image.Fallback_,
+        conditions=[
+            {Tag.Species: "Sambucus nigra"},
+            {Tag.SpeciesDE: "Schwarzer Holunder"},
+        ],
+    ),
+    Fruit(
+        display_name="Holunder",
+        image=Image.Fallback_,
+        conditions=[
+            {Tag.Genus: "Sambucus"},
         ],
     ),
 ]
