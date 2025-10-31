@@ -128,9 +128,9 @@ function addGeoJsonLayerGebiete(geoJSONcontent) {
        "visibility":"visible",
     },
     'paint': {
-    	"text-color":"#555",
+    	"text-color":"#82b",
     },
-     "minzoom": 5,
+     "minzoom": 16,
   });
 }
 
@@ -173,9 +173,10 @@ function addGeoJsonLayer(geoJSONcontent) {
 	    'layout': {
         "icon-image": ["coalesce", ["get", "_image"], "Circled_dot_gray"],
         "icon-size": [
-          "interpolate", ["linear"], ["zoom"],
-          3, 0.3,
-          10, 0.6,
+          "interpolate",
+	  ["exponential", 1.5],
+	  ["zoom"],
+          10, 0.5,
           20, 1.0,
         ],
 	      "icon-allow-overlap": true,
@@ -194,10 +195,10 @@ function addGeoJsonLayer(geoJSONcontent) {
 	    'layout': {
         "text-font":["Noto Sans Regular"],
         "text-size":14,
-        "text-field":"{_display_name}",
+        "text-field":["coalesce", ["get", "taxon:cultivar"], ["get", "_display_name"]],
         "text-offset": [
           0,
-          -2 
+          1.6 
           //0
         ],
 	      "text-allow-overlap": true,
@@ -208,6 +209,29 @@ function addGeoJsonLayer(geoJSONcontent) {
 	    },
       "minzoom":17,
       'filter': ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]
+	});
+
+	map.addLayer({
+	    "id":"trees-text-start-date",
+	    "type":"symbol",
+	    'source': 'uploaded-source',
+	    'layout': {
+        "text-font":["Noto Sans Regular"],
+        "text-size":14,
+        "text-field": ["get", "start_date"],
+        "text-offset": [
+          0,
+          3.0 
+          //0
+        ],
+	      "text-allow-overlap": true,
+        "visibility":"visible",
+	    },
+	    'paint': {
+	    	"text-color":"#811",
+	    },
+      "minzoom":18,
+      'filter': ["all", ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"], ["has", "start_date"]]
 	});
 
 }
