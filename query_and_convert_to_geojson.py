@@ -212,6 +212,7 @@ fruits = [
         image=Image.Fallback_,
         conditions=[
             {Tag.Genus: "Sorbus"},
+            {Tag.Genus: "Scandosorbus"},
         ],
     ),
     Fruit(
