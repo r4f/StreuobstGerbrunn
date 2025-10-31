@@ -194,20 +194,22 @@ function addGeoJsonLayer(geoJSONcontent) {
 	    'source': 'uploaded-source',
 	    'layout': {
         "text-font":["Noto Sans Regular"],
-        "text-size":14,
+        "text-size":15,
         "text-field":["coalesce", ["get", "taxon:cultivar"], ["get", "_display_name"]],
         "text-offset": [
-          0,
-          1.6 
-          //0
+          "interpolate",
+	  ["exponential", 1],
+	  ["zoom"],
+          18, ["literal", [0, 1.5]],
+          22, ["literal", [0, 2.3]],
         ],
 	      "text-allow-overlap": true,
         "visibility":"visible",
 	    },
 	    'paint': {
-	    	"text-color":"#111",
+	    	"text-color":"#717",
 	    },
-      "minzoom":17,
+      "minzoom":18,
       'filter': ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]
 	});
 
@@ -220,15 +222,17 @@ function addGeoJsonLayer(geoJSONcontent) {
         "text-size":14,
         "text-field": ["get", "start_date"],
         "text-offset": [
-          0,
-          3.0 
-          //0
+          "interpolate",
+	  ["exponential", 1],
+	  ["zoom"],
+          18, ["literal", [0, 2.8]],
+          22, ["literal", [0, 3.8]],
         ],
 	      "text-allow-overlap": true,
         "visibility":"visible",
 	    },
 	    'paint': {
-	    	"text-color":"#811",
+	    	"text-color":"#444",
 	    },
       "minzoom":18,
       'filter': ["all", ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"], ["has", "start_date"]]
@@ -259,9 +263,12 @@ map.on('click', 'trees', function(e) {
         let html = '<h3>' + (feature.properties['_display_name'] || 'Baum') + '</h3>';
         html += '<ul>';
         for (const key in feature.properties) {
-    	if ((key === 'display_name') || (key === 'class')) {
-    		continue
-    	}
+    	    if ((key === '_display_name') || (key === '_image') || (key === 'class') || (key === '@id')) {
+    	    	continue
+    	    } else if (key === 'website') {
+                html += `<li><b>${key}</b>: <a href=${feature.properties[key]}>${feature.properties[key].replace("https://", "")}</a></li>`;
+    	    	continue
+	    }
             html += `<li><b>${key}</b>: ${feature.properties[key]}</li>`;
         }
         html += '</ul>';
