@@ -1,11 +1,10 @@
 [project]
-name = "naschobstkarte"
-version = "0.1.0"
+name = "Naschobstkarte"
+version = "0.2.0"
 description = "Rendering of OSM fruit tree data."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "osmtogeojson>=0.0.2",
     "requests>=2.32.5",
-    "sparqlwrapper>=2.0.0",
 ]
