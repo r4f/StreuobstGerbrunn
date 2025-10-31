@@ -1,4 +1,4 @@
-name: Generate the pmtiles file.
+name: Query overpass and generate the geojson files.
 
 on:
   push:
