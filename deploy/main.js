@@ -212,6 +212,20 @@ function addGeoJsonLayer(geoJSONcontent) {
 
 }
 
+// Add geolocate control to the map.
+map.addControl(
+    new maplibregl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    })
+);
+map.addControl(new maplibregl.FullscreenControl());
+
+let nav = new maplibregl.NavigationControl();
+map.addControl(nav, 'top-right');
+
 
 map.on('click', 'trees', function(e) {
     // e.features contains all features at the click location
