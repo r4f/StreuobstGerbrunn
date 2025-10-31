@@ -1,3 +1,4 @@
+from operator import itemgetter
 from dataclasses import dataclass
 import requests
 import json
@@ -25,6 +26,7 @@ class Image(Enum):
     Peach = "peach"
     Walnut = "walnut"
     Cherry = "cherry"
+    NoImage = None
 
 class Tag(Enum):
     Genus = "genus"
@@ -145,6 +147,13 @@ fruits = [
         ]
     ),
     Fruit(
+        display_name="Maulbeere",
+        image=Image.Fallback_,
+        conditions=[
+            {Tag.Genus: "Morus"},
+        ]
+    ),
+    Fruit(
         display_name="Feige",
         image=Image.Fig,
         conditions=[
@@ -165,14 +174,14 @@ fruits = [
     ),
     Fruit(
         display_name="Eiche",
-        image=Image.Fallback_,
+        image=Image.NoImage,
         conditions=[
             {Tag.Genus: "Quercus"},
         ],
     ),
     Fruit(
         display_name="Birke",
-        image=Image.Fallback_,
+        image=Image.NoImage,
         conditions=[
             {Tag.Genus: "Betula"},
         ],
@@ -186,14 +195,14 @@ fruits = [
     ),
     Fruit(
         display_name="Rosskastanie",
-        image=Image.Fallback_,
+        image=Image.NoImage,
         conditions=[
             {Tag.Genus: "Aesculus"},
         ],
     ),
     Fruit(
         display_name="Linde",
-        image=Image.Fallback_,
+        image=Image.NoImage,
         conditions=[
             {Tag.Genus: "Tilia"},
         ],
@@ -218,6 +227,14 @@ fruits = [
         image=Image.Fallback_,
         conditions=[
             {Tag.Genus: "Sambucus"},
+        ],
+    ),
+    Fruit(
+        display_name="Speierling",
+        image=Image.Fallback_,
+        conditions=[
+            #{Tag.Genus: "Cormus"},
+            {Tag.Species: "Cormus domestica"},
         ],
     ),
 ]
@@ -306,9 +323,14 @@ for feature in response_dict["elements"]:
 
     if fruit is not None:
         tags["_display_name"] = fruit.display_name
-        tags["_image"] = fruit.image.value
+        if fruit.image.value is not None:
+            tags["_image"] = fruit.image.value
     if "circumference" in tags:
         tags["circumference"] = float(tags["circumference"])
+
+# sort response elements by latitude
+response_dict["elements"] = sorted(response_dict["elements"], key=itemgetter("lat"))
+
 
 geojson_data = osmtogeojson.process_osm_json(response_dict)
 

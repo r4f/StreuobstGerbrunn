@@ -32,7 +32,16 @@ for (let i = 1; i <= 10; i++) {
 
 map.on('load', () => {
     // Use fetch() to get the local GeoJSON file
-    fetch('trees.geojson') // Replace with your file name
+    fetch('StreuobstGebiete.geojson')
+        .then(response => response.json())
+        .then(data => {
+            // Data is now a GeoJSON object
+            // You can use it to add a source and a layer
+            addGeoJsonLayerGebiete(data);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
+
+    fetch('trees.geojson')
         .then(response => response.json())
         .then(data => {
             // Data is now a GeoJSON object
@@ -71,6 +80,59 @@ for (const fruit of fruit_images) {
   });
 }
 
+function addGeoJsonLayerGebiete(geoJSONcontent) {
+	// Add as source to the map
+	map.addSource('gebiete', {
+	    'type': 'geojson',
+	    'data': geoJSONcontent
+	});
+	
+
+  map.addLayer({
+    "id":"gebiete-fill",
+    "type":"fill",
+    'source': 'gebiete',
+    'layout': {
+      "visibility":"visible"
+    },
+    'paint': {
+      //'line-color': '#800',
+      'fill-color': '#808',
+      'fill-opacity': 0.2,
+    },
+    "minzoom": 5,
+  });
+
+  map.addLayer({
+    "id":"gebiete-stroke",
+    "type":"line",
+    'source': 'gebiete',
+    'layout': {
+      "visibility":"visible"
+    },
+    'paint': {
+      'line-color': '#800',
+    },
+    "minzoom": 5,
+  });
+
+  map.addLayer({
+    "id":"gebiete-text",
+    "type":"symbol",
+    'source': 'gebiete',
+    'layout': {
+       "text-font":["Noto Sans Regular"],
+       "text-size":14,
+       "text-field":"{Name}",
+      "text-allow-overlap": true,
+       "visibility":"visible",
+    },
+    'paint': {
+    	"text-color":"#555",
+    },
+     "minzoom": 5,
+  });
+}
 
 function addGeoJsonLayer(geoJSONcontent) {
 	// Add as source to the map
@@ -87,10 +149,12 @@ function addGeoJsonLayer(geoJSONcontent) {
     'layout': {
       "icon-image": "Tree_from_above",
       "icon-size": [
-        "interpolate", ["linear"], ["zoom"],
-        17, ["*", ["max", ["get", "circumference"], 0.25], 0.3],
-        21, ["*", ["max", ["get", "circumference"], 0.25], 2.7],
-        23, ["*", ["max", ["get", "circumference"], 0.25], 3.2]
+        "interpolate",
+        ["exponential", 2],
+        ["zoom"],
+        14, ["*", 0.0325, ["max", ["coalesce", ["get", "circumference"], 1.0], 0.3]],
+        19, ["*", 1, ["max", ["coalesce", ["get", "circumference"], 1.0], 0.3]],
+        23, ["*", 16, ["max", ["coalesce", ["get", "circumference"], 1.0], 0.3]],
       ],
       "icon-anchor": "center",
       "icon-allow-overlap": true,
@@ -99,36 +163,10 @@ function addGeoJsonLayer(geoJSONcontent) {
 	  'paint': {
       "icon-opacity": 1,
     },
-     "minzoom":17,
-     'filter': ['has', 'circumference'],
+     "minzoom":10,
+     //'filter': ['has', 'circumference'],
   });
 
-	map.addLayer({
-	    "id":"trees-with-circumference",
-	    "type":"symbol",
-	    'source': 'uploaded-source',
-	    'layout': {
-        "icon-image": ["coalesce", ["get", "_image"], "Circled_dot_gray"],
-        "icon-size": [
-          "interpolate", ["linear"], ["zoom"],
-          3, 0.3,
-          10, 0.6,
-          20, 1.0,
-        ],
-	      "icon-allow-overlap": true,
-        "visibility":"visible"
-	    },
-	    'paint': {
-        "icon-opacity": [
-          "interpolate", ["linear"], ["zoom"],
-          17, 1.0,
-          18, 0.6,
-          24, 0.1,
-        ]
-      },
-      "minzoom":3,
-      'filter': ["all", ['has', 'circumference'], ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]]
-	});
 	map.addLayer({
 	    "id":"trees-without-circumference",
 	    "type":"symbol",
@@ -145,7 +183,9 @@ function addGeoJsonLayer(geoJSONcontent) {
         "visibility":"visible"
 	    },
       "minzoom":3,
-      'filter': ["!", ['has', 'circumference']]
+      //'filter': ["!", ['has', 'circumference']]
+      //'filter': ["all", ['has', 'circumference'], ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]]
+      'filter': ["all", ['has', '_image'], ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]]
 	});
 
 	map.addLayer({
@@ -168,7 +208,6 @@ function addGeoJsonLayer(geoJSONcontent) {
 	    	"text-color":"#111",
 	    },
       "minzoom":17,
-	    //'filter': ['==', '$type', 'Point']
       'filter': ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]
 	});
 
