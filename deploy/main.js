@@ -97,7 +97,7 @@ function addGeoJsonLayerGebiete(geoJSONcontent) {
     },
     'paint': {
       //'line-color': '#800',
-      'fill-color': '#808',
+      'fill-color': 'rgba(247, 179, 31, 1)',
       'fill-opacity': 0.2,
     },
     "minzoom": 5,
@@ -111,7 +111,7 @@ function addGeoJsonLayerGebiete(geoJSONcontent) {
       "visibility":"visible"
     },
     'paint': {
-      'line-color': '#800',
+      'line-color': 'rgba(188, 188, 188, 1)',
     },
     "minzoom": 5,
   });
@@ -164,11 +164,10 @@ function addGeoJsonLayer(geoJSONcontent) {
       "icon-opacity": 1,
     },
      "minzoom":10,
-     //'filter': ['has', 'circumference'],
   });
 
 	map.addLayer({
-	    "id":"trees-without-circumference",
+	    "id":"trees",
 	    "type":"symbol",
 	    'source': 'uploaded-source',
 	    'layout': {
@@ -219,7 +218,7 @@ map.on('click', 'trees', function(e) {
     if (e.features.length > 0) {
         const feature = e.features[0];
         // Build HTML for popup from feature properties
-        let html = '<h3>' + (feature.properties['display_name'] || 'Baum') + '</h3>';
+        let html = '<h3>' + (feature.properties['_display_name'] || 'Baum') + '</h3>';
         html += '<ul>';
         for (const key in feature.properties) {
     	if ((key === 'display_name') || (key === 'class')) {
