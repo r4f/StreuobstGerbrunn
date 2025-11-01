@@ -34,7 +34,10 @@ jobs:
         run: uv sync --locked --all-extras --dev
 
       - name: Run script
-        run: uv run query_and_convert_to_geojson.py
+        run: uv run --env-file .env query_and_convert_to_geojson.py
+
+      - name: Render templates
+        run: uv run --env-file .env render_templates.py
 
       - name: Upload static files as artifact
         id: deployment
