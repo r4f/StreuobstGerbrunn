@@ -18,7 +18,6 @@ geojson_result_file = "deploy/trees.geojson"
 query_content = f"""
     [out:json][timeout:25];
     node({BBOX_SOUTH},{BBOX_WEST},{BBOX_NORTH},{BBOX_EAST})[natural=tree]
-    //[operator='Obst- und Gartenbauverein Gerbrunn']
     ;
     out;
 """
@@ -272,44 +271,6 @@ class Taxon:
     wikidata: str
 
 
-# Genus(
-#    genus="Surbus",
-#    genus_de="Mehlbeere",
-#    wikidata="Q157964",
-# )
-#
-# Genus(
-#    genus="Malus",
-#    genus_de="Apfel",
-#    wikidata="Q104819",
-# )
-#
-#
-#
-#
-#
-# Species(
-#    species="Malus domestica",
-#    species_de="Kulturapfel",
-#    wikidata="Q18674606",
-# )
-#
-# schoener_aus_boskoop = Taxon(
-#    taxon_cultivar="Schöner aus Boskoop",
-#    wikidata="Q504565",
-# )
-#
-# taxon_normalizations = {
-#    "Roter Boskoop": schoener_aus_boskoop,
-# }
-#
-# def get_Sorte(tags: dict) -> Sorte | None:
-#    for sorte, conditions in sorten_map.items():
-#        for c in conditions:
-#            if all(tags.get(k.value)==v for k, v in c.items()):
-#                return sorte
-#    return None
-
 with requests.post(url=overpass_url, data=query_content) as response:
     response_dict = json.loads(response.text)
 
@@ -320,7 +281,6 @@ for feature in response_dict["elements"]:
     tags = feature["tags"]
 
     # try to find the correct fruit based on the tags.
-
     fruit = None
     for f in fruits:
         if f.one_condition_holds(tags):
