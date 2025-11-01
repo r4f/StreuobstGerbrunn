@@ -1,8 +1,4 @@
-
-from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
-import subprocess
-import tomllib
 import os
 import shutil
 
@@ -19,7 +15,7 @@ if display_areas:
     shutil.copy2(areas_geojson_file, "deploy/areas.geojson")
     
 
-with open(f"deploy/index.html", "w") as f:
+with open("deploy/index.html", "w") as f:
     template = env.get_template("index.html")
     output = template.render({"WEBSITE_TITLE": os.environ["WEBSITE_TITLE"]})
     f.write(output)
@@ -32,7 +28,7 @@ context = dict(
     display_areas=display_areas,
 )
 
-with open(f"deploy/main.js", "w") as f:
+with open("deploy/main.js", "w") as f:
     template = env.get_template("main.js")
     output = template.render(context)
     f.write(output)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import requests
 import json
 from osmtogeojson import osmtogeojson
-from enum import Enum, auto
+from enum import Enum
 
 import sys
 import os
