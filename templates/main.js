@@ -187,9 +187,11 @@ function addTreeLayer(geoJSONcontent) {
         "visibility":"visible"
 	    },
       "minzoom":3,
-      //'filter': ["!", ['has', 'circumference']]
-      //'filter': ["all", ['has', 'circumference'], ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]]
-      'filter': ["all", ['has', '_image'], ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]]
+      'filter': [
+        "all",
+        ['has', '_image'],
+        {{ display_conditions }}
+      ]
 	});
 
 	map.addLayer({
@@ -214,7 +216,9 @@ function addTreeLayer(geoJSONcontent) {
 	    	"text-color":"#717",
 	    },
       "minzoom":18,
-      'filter': ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"]
+      {% if display_conditions != "" %}
+      'filter': {{ display_conditions }}
+      {% endif %}
 	});
 
 	map.addLayer({
@@ -239,7 +243,11 @@ function addTreeLayer(geoJSONcontent) {
 	    	"text-color":"#444",
 	    },
       "minzoom":18,
-      'filter': ["all", ["==", "operator", "Obst- und Gartenbauverein Gerbrunn"], ["has", "start_date"]]
+      'filter': [
+        "all",
+        {{ display_conditions }}
+        ["has", "start_date"]
+      ]
 	});
 
 }

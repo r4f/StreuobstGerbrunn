@@ -11,6 +11,13 @@ BBOX_NORTH = float(os.environ["BBOX_NORTH"])
 BBOX_EAST = float(os.environ["BBOX_EAST"])
 INITIAL_ZOOM = float(os.environ["INITIAL_ZOOM"])
 
+display_condition = os.environ.get("DISPLAY_CONDITION")
+if display_condition is not None:
+    key, value = display_condition.split("==")
+    display_conditions = f'["==", "{key}", "{value}"],'
+else:
+    display_conditions = ""
+
 loader = FileSystemLoader(TEMPLATE_DIR)
 env = Environment(loader=loader)
 
@@ -38,6 +45,7 @@ context = dict(
     center_lon=0.5 * (BBOX_WEST + BBOX_EAST),
     center_lat=0.5 * (BBOX_SOUTH + BBOX_NORTH),
     display_areas=display_areas,
+    display_conditions=display_conditions,
 )
 
 with open("deploy/main.js", "w") as f:
