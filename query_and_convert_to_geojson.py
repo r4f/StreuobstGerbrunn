@@ -1,12 +1,12 @@
-from operator import itemgetter
-from dataclasses import dataclass
-import requests
 import json
-from osmtogeojson import osmtogeojson
-from enum import Enum
-
-import sys
 import os
+import sys
+from dataclasses import dataclass
+from enum import Enum
+from operator import itemgetter
+
+import requests
+from osmtogeojson import osmtogeojson
 
 BBOX_SOUTH = os.environ["BBOX_SOUTH"]
 BBOX_WEST = os.environ["BBOX_WEST"]
@@ -56,7 +56,7 @@ class Fruit:
 
     def one_condition_holds(self, tags):
         for condition in self.conditions:
-            if all(condition[k] == tags.get(k.value) for k in condition.keys()):
+            if all(condition[k] == tags.get(k.value) for k in condition):
                 return True
         return False
 
