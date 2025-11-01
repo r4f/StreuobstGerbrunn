@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from dataclasses import dataclass
 from enum import Enum
 from operator import itemgetter
@@ -271,11 +272,40 @@ class Taxon:
     wikidata: str
 
 
-with requests.post(url=overpass_url, data=query_content) as response:
-    response_dict = json.loads(response.text)
+if os.environ.get("USE_LOCAL_TREES_FILE", "false") == "true":
+    with open("data/trees.json") as f:
+        response_dict = json.load(f)
+else:
+    with requests.post(url=overpass_url, data=query_content) as response:
+        response_dict = json.loads(response.text)
 
-with open("trees.json", "w") as f:
-    json.dump(response_dict, f, indent=2)
+    with open("data/trees.json", "w") as f:
+        json.dump(response_dict, f, indent=2)
+
+pattern = re.compile(r"(\d+\.?\d*)\s*(m|cm|mm)", re.IGNORECASE)
+
+
+def normalize_length(length_value: str):
+    try:
+        f = float(length_value)
+        return f
+    except Exception:
+        match = pattern.match(length_value)
+        if match:
+            # Extract the numeric value (Group 1) and the unit (Group 2)
+            value_str, unit = match.groups()
+            value = float(value_str)
+            match unit:
+                case "m":
+                    return value
+                case "cm":
+                    return value * 10
+                case "mm":
+                    return value * 100
+        else:
+            print("Could not match", length_value)
+            return 0.5
+
 
 for feature in response_dict["elements"]:
     tags = feature["tags"]
@@ -292,7 +322,7 @@ for feature in response_dict["elements"]:
         if fruit.image.value is not None:
             tags["_image"] = fruit.image.value
     if "circumference" in tags:
-        tags["circumference"] = float(tags["circumference"])
+        tags["circumference"] = normalize_length(tags["circumference"])
 
 # sort response elements by latitude
 response_dict["elements"] = sorted(response_dict["elements"], key=itemgetter("lat"))

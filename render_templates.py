@@ -9,7 +9,7 @@ BBOX_SOUTH = float(os.environ["BBOX_SOUTH"])
 BBOX_WEST = float(os.environ["BBOX_WEST"])
 BBOX_NORTH = float(os.environ["BBOX_NORTH"])
 BBOX_EAST = float(os.environ["BBOX_EAST"])
-INITIAL_ZOOM = float(os.environ["INITIAL_ZOOM"])
+INITIAL_ZOOM = float(os.environ.get("INITIAL_ZOOM", 15))
 
 display_condition = os.environ.get("DISPLAY_CONDITION")
 if display_condition is not None:
@@ -33,7 +33,7 @@ if display_areas:
 
 with open("deploy/index.html", "w") as f:
     template = env.get_template("index.html")
-    output = template.render({"WEBSITE_TITLE": os.environ["WEBSITE_TITLE"]})
+    output = template.render({"WEBSITE_TITLE": os.environ.get("WEBSITE_TITLE", "")})
     f.write(output)
 
 context = dict(
