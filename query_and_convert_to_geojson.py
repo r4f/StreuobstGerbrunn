@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 from dataclasses import dataclass
 from enum import Enum
 from operator import itemgetter
@@ -23,6 +22,7 @@ query_content = f"""
     ;
     out;
 """
+
 
 class Image(Enum):
     Apple = "apple"
