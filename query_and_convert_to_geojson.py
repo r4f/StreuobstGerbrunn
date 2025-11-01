@@ -243,35 +243,6 @@ fruits = [
 ]
 
 
-@dataclass
-class Genus:
-    genus: str
-    genus_de: str
-    image: Image
-    display_name: str
-    wikidata: str
-
-
-@dataclass
-class Species:
-    genus: Genus
-    species: str
-    species_de: str
-    image: Image
-    display_name: str
-    wikidata: str
-
-
-@dataclass
-class Taxon:
-    species: Species
-    taxon_cultivar: str
-    # taxon_cultivar_de: str
-    image: Image
-    display_name: str
-    wikidata: str
-
-
 if os.environ.get("USE_LOCAL_TREES_FILE", "false") == "true":
     with open("data/trees.json") as f:
         response_dict = json.load(f)
