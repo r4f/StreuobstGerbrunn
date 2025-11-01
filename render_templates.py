@@ -5,6 +5,12 @@ from jinja2 import Environment, FileSystemLoader
 
 TEMPLATE_DIR = "templates"
 
+BBOX_SOUTH=float(os.environ["BBOX_SOUTH"])
+BBOX_WEST=float(os.environ["BBOX_WEST"])
+BBOX_NORTH=float(os.environ["BBOX_NORTH"])
+BBOX_EAST=float(os.environ["BBOX_EAST"])
+INITIAL_ZOOM=float(os.environ["INITIAL_ZOOM"])
+
 loader = FileSystemLoader(TEMPLATE_DIR)
 env = Environment(loader=loader)
 
@@ -24,10 +30,13 @@ with open("deploy/index.html", "w") as f:
     f.write(output)
 
 context = dict(
-    BBOX_SOUTH=os.environ["BBOX_SOUTH"],
-    BBOX_WEST=os.environ["BBOX_WEST"],
-    BBOX_NORTH=os.environ["BBOX_NORTH"],
-    BBOX_EAST=os.environ["BBOX_EAST"],
+    BBOX_SOUTH=BBOX_SOUTH,
+    BBOX_WEST=BBOX_WEST,
+    BBOX_NORTH=BBOX_NORTH,
+    BBOX_EAST=BBOX_EAST,
+    INITIAL_ZOOM=INITIAL_ZOOM,
+    center_lon=0.5*(BBOX_WEST+BBOX_EAST),
+    center_lat=0.5*(BBOX_SOUTH+BBOX_NORTH),
     display_areas=display_areas,
 )
 

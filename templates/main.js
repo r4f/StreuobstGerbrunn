@@ -1,11 +1,11 @@
 const map = new maplibregl.Map({
   container: 'map',
   style: 'https://tiles.openfreemap.org/styles/bright',
-  center: [10.0, 49.78],
-  zoom: 14.5,
+  center: [{{ center_lon }}, {{ center_lat }}],
+  zoom: {{ INITIAL_ZOOM }},
   maxBounds: [
-    [9.972,49.768],
-    [10.04,49.794],
+    [{{ BBOX_WEST}}, {{BBOX_SOUTH}}],
+    [{{ BBOX_EAST}}, {{BBOX_NORTH}}],
   ],
   pitch: 0, // Sets the initial view to be straight down
   maxPitch: 0, // Prevents the user from changing the pitch
@@ -38,7 +38,7 @@ map.on('load', () => {
         .then(data => {
             // Data is now a GeoJSON object
             // You can use it to add a source and a layer
-            addGeoJsonLayerGebiete(data);
+            addAreaLayer(data);
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
     {% endif %}
@@ -48,7 +48,7 @@ map.on('load', () => {
         .then(data => {
             // Data is now a GeoJSON object
             // You can use it to add a source and a layer
-            addGeoJsonLayer(data);
+            addTreeLayer(data);
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
 });
@@ -82,7 +82,8 @@ for (const fruit of fruit_images) {
   });
 }
 
-function addGeoJsonLayerGebiete(geoJSONcontent) {
+{% if display_areas %}
+function addAreaLayer(geoJSONcontent) {
 	// Add as source to the map
 	map.addSource('gebiete', {
 	    'type': 'geojson',
@@ -135,8 +136,9 @@ function addGeoJsonLayerGebiete(geoJSONcontent) {
      "minzoom": 16,
   });
 }
+{% endif %}
 
-function addGeoJsonLayer(geoJSONcontent) {
+function addTreeLayer(geoJSONcontent) {
 	// Add as source to the map
 	map.addSource('uploaded-source', {
 	    'type': 'geojson',
