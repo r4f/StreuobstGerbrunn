@@ -24,10 +24,6 @@ query_content = f"""
     out;
 """
 
-print(query_content)
-sys.exit(0)
-
-
 class Image(Enum):
     Apple = "apple"
     Pear = "pear"
