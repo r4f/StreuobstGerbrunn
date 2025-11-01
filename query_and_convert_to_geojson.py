@@ -13,8 +13,8 @@ BBOX_WEST = os.environ["BBOX_WEST"]
 BBOX_NORTH = os.environ["BBOX_NORTH"]
 BBOX_EAST = os.environ["BBOX_EAST"]
 
-overpass_url="https://overpass-api.de/api/interpreter"
-geojson_result_file="deploy/trees.geojson"
+overpass_url = "https://overpass-api.de/api/interpreter"
+geojson_result_file = "deploy/trees.geojson"
 
 query_content = f"""
     [out:json][timeout:25];
@@ -26,6 +26,7 @@ query_content = f"""
 
 print(query_content)
 sys.exit(0)
+
 
 class Image(Enum):
     Apple = "apple"
@@ -39,23 +40,26 @@ class Image(Enum):
     Cherry = "cherry"
     NoImage = None
 
+
 class Tag(Enum):
     Genus = "genus"
     Species = "species"
     GenusDE = "genus:de"
     SpeciesDE = "species:de"
 
+
 @dataclass
-class Fruit():
+class Fruit:
     display_name: str
     image: Image
     conditions: list[dict]
 
     def one_condition_holds(self, tags):
         for condition in self.conditions:
-            if all(condition[k]==tags.get(k.value) for k in condition.keys()):
+            if all(condition[k] == tags.get(k.value) for k in condition.keys()):
                 return True
         return False
+
 
 fruits = [
     Fruit(
@@ -90,16 +94,12 @@ fruits = [
     Fruit(
         display_name="Zwetschge",
         image=Image.Plum,
-        conditions=[
-            {Tag.Species: "Prunus domestica subsp. domestica"}
-        ],
+        conditions=[{Tag.Species: "Prunus domestica subsp. domestica"}],
     ),
     Fruit(
         display_name="Pflaume",
         image=Image.Plum,
-        conditions=[
-            {Tag.Species: "Prunus domestica"}
-        ],
+        conditions=[{Tag.Species: "Prunus domestica"}],
     ),
     Fruit(
         display_name="Kirschpflaume",
@@ -130,7 +130,6 @@ fruits = [
         conditions=[
             {Tag.GenusDE: "Kirsche"},
             {Tag.Genus: "Prunus subg. Cerasus"},
-            
         ],
     ),
     Fruit(
@@ -139,7 +138,7 @@ fruits = [
         conditions=[
             {Tag.Species: "Morus alba"},
             {Tag.SpeciesDE: "Weiße Maulbeere"},
-        ]
+        ],
     ),
     Fruit(
         display_name="Schwarze Maulbeere",
@@ -147,7 +146,7 @@ fruits = [
         conditions=[
             {Tag.Species: "Morus nigra"},
             {Tag.SpeciesDE: "Schwarze Maulbeere"},
-        ]
+        ],
     ),
     Fruit(
         display_name="Rote Maulbeere",
@@ -155,33 +154,29 @@ fruits = [
         conditions=[
             {Tag.Species: "Morus rubra"},
             {Tag.SpeciesDE: "Rote Maulbeere"},
-        ]
+        ],
     ),
     Fruit(
         display_name="Maulbeere",
         image=Image.Fallback_,
         conditions=[
             {Tag.Genus: "Morus"},
-        ]
+        ],
     ),
     Fruit(
         display_name="Feige",
         image=Image.Fig,
-        conditions=[
-        ],
+        conditions=[],
     ),
     Fruit(
         display_name="Pfirsisch",
         image=Image.Peach,
-        conditions=[
-        ],
+        conditions=[],
     ),
     Fruit(
         display_name="Walnuss",
         image=Image.Walnut,
-        conditions=[
-            {Tag.Genus: "Juglans"}
-        ],
+        conditions=[{Tag.Genus: "Juglans"}],
     ),
     Fruit(
         display_name="Eiche",
@@ -245,11 +240,12 @@ fruits = [
         display_name="Speierling",
         image=Image.Fallback_,
         conditions=[
-            #{Tag.Genus: "Cormus"},
+            # {Tag.Genus: "Cormus"},
             {Tag.Species: "Cormus domestica"},
         ],
     ),
 ]
+
 
 @dataclass
 class Genus:
@@ -258,6 +254,7 @@ class Genus:
     image: Image
     display_name: str
     wikidata: str
+
 
 @dataclass
 class Species:
@@ -268,48 +265,49 @@ class Species:
     display_name: str
     wikidata: str
 
+
 @dataclass
 class Taxon:
     species: Species
     taxon_cultivar: str
-    #taxon_cultivar_de: str
+    # taxon_cultivar_de: str
     image: Image
     display_name: str
     wikidata: str
 
 
-#Genus(
+# Genus(
 #    genus="Surbus",
 #    genus_de="Mehlbeere",
 #    wikidata="Q157964",
-#)
+# )
 #
-#Genus(
+# Genus(
 #    genus="Malus",
 #    genus_de="Apfel",
 #    wikidata="Q104819",
-#)
+# )
 #
 #
 #
 #
 #
-#Species(
+# Species(
 #    species="Malus domestica",
 #    species_de="Kulturapfel",
 #    wikidata="Q18674606",
-#)
+# )
 #
-#schoener_aus_boskoop = Taxon(
+# schoener_aus_boskoop = Taxon(
 #    taxon_cultivar="Schöner aus Boskoop",
 #    wikidata="Q504565",
-#)
+# )
 #
-#taxon_normalizations = {
+# taxon_normalizations = {
 #    "Roter Boskoop": schoener_aus_boskoop,
-#}
+# }
 #
-#def get_Sorte(tags: dict) -> Sorte | None:
+# def get_Sorte(tags: dict) -> Sorte | None:
 #    for sorte, conditions in sorten_map.items():
 #        for c in conditions:
 #            if all(tags.get(k.value)==v for k, v in c.items()):
@@ -326,7 +324,7 @@ for feature in response_dict["elements"]:
     tags = feature["tags"]
 
     # try to find the correct fruit based on the tags.
-    
+
     fruit = None
     for f in fruits:
         if f.one_condition_holds(tags):

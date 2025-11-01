@@ -2,7 +2,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import shutil
 
-TEMPLATE_DIR = 'templates'
+TEMPLATE_DIR = "templates"
 
 loader = FileSystemLoader(TEMPLATE_DIR)
 env = Environment(loader=loader)
@@ -11,9 +11,11 @@ display_areas = os.environ.get("DISPLAY_AREAS", "false") == "true"
 if display_areas:
     areas_geojson_file = os.environ.get("AREAS_GEOJSON_FILE")
     if areas_geojson_file is None:
-        raise ValueError("To display areas, a geojson file must be provided and set in .env.")
+        raise ValueError(
+            "To display areas, a geojson file must be provided and set in .env."
+        )
     shutil.copy2(areas_geojson_file, "deploy/areas.geojson")
-    
+
 
 with open("deploy/index.html", "w") as f:
     template = env.get_template("index.html")
