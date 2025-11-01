@@ -5,6 +5,7 @@ description = "Rendering of OSM fruit tree data."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "jinja2>=3.1.6",
     "osmtogeojson>=0.0.2",
     "requests>=2.32.5",
 ]

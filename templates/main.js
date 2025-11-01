@@ -32,7 +32,8 @@ for (let i = 1; i <= 10; i++) {
 
 map.on('load', () => {
     // Use fetch() to get the local GeoJSON file
-    fetch('StreuobstGebiete.geojson')
+    {% if display_areas %}
+    fetch('areas.geojson')
         .then(response => response.json())
         .then(data => {
             // Data is now a GeoJSON object
@@ -40,6 +41,7 @@ map.on('load', () => {
             addGeoJsonLayerGebiete(data);
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
+    {% endif %}
 
     fetch('trees.geojson')
         .then(response => response.json())

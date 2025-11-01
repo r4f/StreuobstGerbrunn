@@ -8,3 +8,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+# gets generated from template dir
+deploy/index.html
+deploy/main.js
+deploy/trees.geojson
+deploy/areas.geojson

@@ -5,16 +5,27 @@ import json
 from osmtogeojson import osmtogeojson
 from enum import Enum, auto
 
+import sys
+import os
+
+BBOX_SOUTH = os.environ["BBOX_SOUTH"]
+BBOX_WEST = os.environ["BBOX_WEST"]
+BBOX_NORTH = os.environ["BBOX_NORTH"]
+BBOX_EAST = os.environ["BBOX_EAST"]
+
 overpass_url="https://overpass-api.de/api/interpreter"
 geojson_result_file="deploy/trees.geojson"
 
-query_content = """
+query_content = f"""
     [out:json][timeout:25];
-    node(49.768,9.972,49.794,10.04)[natural=tree]
+    node({BBOX_SOUTH},{BBOX_WEST},{BBOX_NORTH},{BBOX_EAST})[natural=tree]
     //[operator='Obst- und Gartenbauverein Gerbrunn']
     ;
     out;
 """
+
+print(query_content)
+sys.exit(0)
 
 class Image(Enum):
     Apple = "apple"
