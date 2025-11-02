@@ -3,6 +3,8 @@ name: Query overpass and generate the geojson files.
 on:
   push:
     branches: [main]
+  schedule:
+    - cron:  '0 6 * * *'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
