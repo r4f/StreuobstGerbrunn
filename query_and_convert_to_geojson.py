@@ -27,6 +27,7 @@ query_content = f"""
 class Image(Enum):
     Apple = "apple"
     Pear = "pear"
+    Chestnut = "chestnut"
     Quince = "quince"
     Plum = "plum"
     Fig = "fig"
@@ -190,7 +191,7 @@ fruits = [
     ),
     Fruit(
         display_name="Kastanie",
-        image=Image.Fallback_,
+        image=Image.Chestnut,
         conditions=[
             {Tag.Genus: "Castanea"},
         ],
