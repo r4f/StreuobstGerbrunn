@@ -58,6 +58,7 @@ fruit_images = [
     "cherry",
     "pear",
     "plum",
+    "mulberry",
     "chestnut",
     "walnut",
     "peach",

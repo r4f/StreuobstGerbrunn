@@ -35,6 +35,7 @@ class Image(Enum):
     Peach = "peach"
     Walnut = "walnut"
     Cherry = "cherry"
+    Mulberry = "mulberry"
     NoImage = None
 
 
@@ -131,7 +132,7 @@ fruits = [
     ),
     Fruit(
         display_name="Weiße Maulbeere",
-        image=Image.Fallback_,
+        image=Image.Mulberry,
         conditions=[
             {Tag.Species: "Morus alba"},
             {Tag.SpeciesDE: "Weiße Maulbeere"},
@@ -139,7 +140,7 @@ fruits = [
     ),
     Fruit(
         display_name="Schwarze Maulbeere",
-        image=Image.Fallback_,
+        image=Image.Mulberry,
         conditions=[
             {Tag.Species: "Morus nigra"},
             {Tag.SpeciesDE: "Schwarze Maulbeere"},
@@ -147,7 +148,7 @@ fruits = [
     ),
     Fruit(
         display_name="Rote Maulbeere",
-        image=Image.Fallback_,
+        image=Image.Mulberry,
         conditions=[
             {Tag.Species: "Morus rubra"},
             {Tag.SpeciesDE: "Rote Maulbeere"},
@@ -155,7 +156,7 @@ fruits = [
     ),
     Fruit(
         display_name="Maulbeere",
-        image=Image.Fallback_,
+        image=Image.Mulberry,
         conditions=[
             {Tag.Genus: "Morus"},
         ],
