@@ -240,6 +240,11 @@ fruits = [
             {Tag.Species: "Cormus domestica"},
         ],
     ),
+    Fruit(
+        display_name="",
+        image=Image.Fallback_,
+        conditions=[{}],
+    ),
 ]
 
 
