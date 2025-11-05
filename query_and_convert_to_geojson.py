@@ -36,6 +36,7 @@ class Image(Enum):
     Walnut = "walnut"
     Cherry = "cherry"
     Mulberry = "mulberry"
+    Speierling = "speierling"
     NoImage = None
 
 
@@ -236,7 +237,7 @@ fruits = [
     ),
     Fruit(
         display_name="Speierling",
-        image=Image.Fallback_,
+        image=Image.Speierling,
         conditions=[
             # {Tag.Genus: "Cormus"},
             {Tag.Species: "Cormus domestica"},
