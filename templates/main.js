@@ -253,6 +253,35 @@ function addTreeLayer(geoJSONcontent) {
       ]
 	});
 
+    map.addLayer({
+        "id":"trees-ref-nr",
+        "type":"symbol",
+        'source': 'uploaded-source',
+        'layout': {
+        "text-font":["Noto Sans Regular"],
+        "text-size":15,
+        "text-field": ["get", "ref"],
+        "text-offset": [
+          "interpolate",
+              ["exponential", 1],
+              ["zoom"],
+              10, ["literal", [0, -0.2]],
+              22, ["literal", [0, -2.6]],
+        ],
+          "text-allow-overlap": true,
+        "visibility":"visible",
+        },
+        'paint': {
+            "text-color":"#00f",
+        },
+      "minzoom":10,
+      'filter': [
+        "all",
+        {{ display_conditions }}
+        ["has", "ref"]
+      ]
+    });
+
 }
 
 // Add geolocate control to the map.
