@@ -9,6 +9,8 @@ BBOX_SOUTH = float(os.environ["BBOX_SOUTH"])
 BBOX_WEST = float(os.environ["BBOX_WEST"])
 BBOX_NORTH = float(os.environ["BBOX_NORTH"])
 BBOX_EAST = float(os.environ["BBOX_EAST"])
+CENTER_LON = float(os.environ.get("CENTER_LON") or 0.5 * (BBOX_WEST + BBOX_EAST))
+CENTER_LAT = float(os.environ.get("CENTER_LAT") or 0.5 * (BBOX_SOUTH + BBOX_NORTH))
 INITIAL_ZOOM = float(os.environ.get("INITIAL_ZOOM", 15))
 
 display_condition = os.environ.get("DISPLAY_CONDITION")
@@ -42,8 +44,8 @@ context = dict(
     BBOX_NORTH=BBOX_NORTH,
     BBOX_EAST=BBOX_EAST,
     INITIAL_ZOOM=INITIAL_ZOOM,
-    center_lon=0.5 * (BBOX_WEST + BBOX_EAST),
-    center_lat=0.5 * (BBOX_SOUTH + BBOX_NORTH),
+    center_lon=CENTER_LON,
+    center_lat=CENTER_LAT,
     display_areas=display_areas,
     display_conditions=display_conditions,
 )
