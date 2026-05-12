@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "jinja2>=3.1.6",
     "osmtogeojson>=0.0.2",
-    "requests>=2.32.5",
+    "requests>=2.34.0",
 ]
 
 [tool.ruff.lint]
