@@ -321,29 +321,20 @@ else:
         with open(local_trees_file, "w") as f:
             json.dump(response_dict, f, indent=2)
 
-pattern = re.compile(r"(\d+\.?\d*)\s*(m|cm|mm)", re.IGNORECASE)
+# e.g. "1.2", "1,2 m", "35cm", "<0.01", "~1.5 m". A leading <, > or ~ is ignored.
+pattern = re.compile(r"\s*[<>~≈]?\s*(\d+(?:[.,]\d+)?)\s*(m|cm|mm)?\s*", re.IGNORECASE)
+unit_in_metres = {"m": 1, "cm": 0.01, "mm": 0.001}
 
 
-def normalize_length(length_value: str):
-    try:
-        f = float(length_value)
-        return f
-    except Exception:
-        match = pattern.match(length_value)
-        if match:
-            # Extract the numeric value (Group 1) and the unit (Group 2)
-            value_str, unit = match.groups()
-            value = float(value_str)
-            match unit:
-                case "m":
-                    return value
-                case "cm":
-                    return value / 100
-                case "mm":
-                    return value / 1000
-        else:
-            print("Could not match", length_value)
-            return 0.5
+def normalize_length(length_value: str) -> float:
+    """Convert an OSM length value to metres."""
+    match = pattern.fullmatch(length_value)
+    if not match:
+        print("Could not match", length_value)
+        return 0.5
+    value_str, unit = match.groups()
+    value = float(value_str.replace(",", "."))
+    return value * unit_in_metres[(unit or "m").lower()]
 
 
 for feature in response_dict["elements"]:
