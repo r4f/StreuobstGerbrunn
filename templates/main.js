@@ -347,8 +347,8 @@ map.on('mouseleave', 'trees', function() {
 
 // ---------- Search by fruit type and cultivar ----------
 
-// The search panel is only shown when the page is opened with ?search=true.
-const searchEnabled = ['true', '1', ''].includes(
+// The search panel is shown unless the page is opened with ?search=false.
+const searchEnabled = !['false', '0'].includes(
   new URLSearchParams(window.location.search).get('search')
 );
 
