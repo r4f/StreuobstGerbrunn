@@ -48,9 +48,8 @@
                 font: inherit;
                 padding: 4px;
         }
-        #search .buttons {
-                display: flex;
-                gap: 6px;
+        #search button {
+                align-self: flex-start;
         }
         </style>
     </head>
@@ -67,10 +66,7 @@
                 <input id="search-cultivar" list="search-cultivar-list" type="search" placeholder="z. B. Boskoop" autocomplete="off">
                 <datalist id="search-cultivar-list"></datalist>
                 <span id="search-result" aria-live="polite"></span>
-                <div class="buttons">
-                    <button id="search-zoom" type="button" disabled>Zu den Treffern</button>
-                    <button id="search-reset" type="button" hidden>Zurücksetzen</button>
-                </div>
+                <button id="search-reset" type="button" hidden>Zurücksetzen</button>
             </div>
         </details>
         <script src="main.js"></script>

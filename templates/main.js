@@ -370,7 +370,6 @@ function initSearch(allData) {
   const cultivarInput = document.getElementById('search-cultivar');
   const cultivarList = document.getElementById('search-cultivar-list');
   const resultText = document.getElementById('search-result');
-  const zoomButton = document.getElementById('search-zoom');
   const resetButton = document.getElementById('search-reset');
 
   const displayed = allData.features.filter(f => isDisplayed(f.properties));
@@ -385,8 +384,6 @@ function initSearch(allData) {
     groupSelect.add(new Option(`${g} (${n})`, g));
   }
 
-  let matches = displayed;
-
   function update() {
     const group = groupSelect.value;
     const query = cultivarInput.value.trim().toLowerCase();
@@ -396,7 +393,7 @@ function initSearch(allData) {
     const cultivars = [...new Set(inGroup.map(f => f.properties['taxon:cultivar']).filter(Boolean))].sort();
     cultivarList.replaceChildren(...cultivars.map(c => new Option(c)));
 
-    matches = inGroup.filter(f => !query || cultivarOf(f.properties).toLowerCase().includes(query));
+    const matches = inGroup.filter(f => !query || cultivarOf(f.properties).toLowerCase().includes(query));
     const active = group !== '' || query !== '';
     const matching = new Set(matches);
     for (const f of allData.features) {
@@ -404,7 +401,6 @@ function initSearch(allData) {
     }
     map.getSource('uploaded-source').setData(allData);
     resultText.textContent = active ? `${matches.length} Bäume gefunden` : '';
-    zoomButton.disabled = !active || matches.length === 0;
     resetButton.hidden = !active;
   }
 
@@ -414,12 +410,6 @@ function initSearch(allData) {
     groupSelect.value = '';
     cultivarInput.value = '';
     update();
-  });
-  zoomButton.addEventListener('click', () => {
-    const bounds = new maplibregl.LngLatBounds();
-    for (const f of matches) bounds.extend(f.geometry.coordinates);
-    map.fitBounds(bounds, {padding: 60, maxZoom: 19});
-    if (window.matchMedia('(max-width: 600px)').matches) panel.open = false;
   });
   panel.hidden = false;
 }
