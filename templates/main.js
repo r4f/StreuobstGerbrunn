@@ -306,7 +306,8 @@ map.addControl(
         trackUserLocation: true
     })
 );
-map.addControl(new maplibregl.FullscreenControl());
+// Fullscreen the whole page, not just the map, so the search panel stays visible.
+map.addControl(new maplibregl.FullscreenControl({container: document.body}));
 
 let nav = new maplibregl.NavigationControl();
 map.addControl(nav, 'top-right');
