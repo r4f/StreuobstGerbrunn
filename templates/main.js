@@ -412,5 +412,15 @@ function initSearch(allData) {
     cultivarInput.value = '';
     update();
   });
+  // Start collapsed when embedded in another page, where space is usually tight.
+  if (isInIframe()) panel.open = false;
   panel.hidden = false;
+}
+
+function isInIframe() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true; // Some browsers block access to window.top across origins.
+  }
 }
