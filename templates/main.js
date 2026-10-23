@@ -49,7 +49,7 @@ map.on('load', () => {
             // Data is now a GeoJSON object
             // You can use it to add a source and a layer
             addTreeLayer(data);
-            initSearch(data);
+            if (searchEnabled) initSearch(data);
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
 });
@@ -142,6 +142,10 @@ function addAreaLayer(geoJSONcontent) {
 }
 {% endif %}
 
+// Trees that do not match the current search are marked with _dimmed and faded out.
+const dimmed = ["boolean", ["get", "_dimmed"], false];
+const dimmedOpacity = ["case", dimmed, 0.25, 1];
+
 function addTreeLayer(geoJSONcontent) {
 	// Add as source to the map
 	map.addSource('uploaded-source', {
@@ -169,7 +173,7 @@ function addTreeLayer(geoJSONcontent) {
       "visibility":"visible"
     },
 	  'paint': {
-      "icon-opacity": 1,
+      "icon-opacity": ["case", dimmed, 0.15, 1],
     },
      "minzoom":10,
   });
@@ -188,8 +192,13 @@ function addTreeLayer(geoJSONcontent) {
           20, 1.0,
         ],
 	      "icon-allow-overlap": true,
+        // Draw search matches on top of dimmed trees.
+        "symbol-sort-key": ["case", dimmed, 0, 1],
         "visibility":"visible"
 	    },
+      'paint': {
+        "icon-opacity": dimmedOpacity,
+      },
       "minzoom":3,
       'filter': [
         "all",
@@ -218,6 +227,7 @@ function addTreeLayer(geoJSONcontent) {
 	    },
 	    'paint': {
 	    	"text-color":"#717",
+	    	"text-opacity": dimmedOpacity,
 	    },
       "minzoom":18,
       {% if display_conditions != "" %}
@@ -245,6 +255,7 @@ function addTreeLayer(geoJSONcontent) {
 	    },
 	    'paint': {
 	    	"text-color":"#444",
+	    	"text-opacity": dimmedOpacity,
 	    },
       "minzoom":18,
       'filter': [
@@ -274,6 +285,7 @@ function addTreeLayer(geoJSONcontent) {
         },
         'paint': {
             "text-color":"#00f",
+            "text-opacity": dimmedOpacity,
         },
       "minzoom":10,
       'filter': [
@@ -334,6 +346,11 @@ map.on('mouseleave', 'trees', function() {
 
 // ---------- Search by fruit type and cultivar ----------
 
+// The search panel is only shown when the page is opened with ?search=true.
+const searchEnabled = ['true', '1', ''].includes(
+  new URLSearchParams(window.location.search).get('search')
+);
+
 // Same as DISPLAY_CONDITION in .env, e.g. {"operator": "..."}; null = show all.
 const displayCondition = {{ display_condition_js }};
 
@@ -381,9 +398,11 @@ function initSearch(allData) {
 
     matches = inGroup.filter(f => !query || cultivarOf(f.properties).toLowerCase().includes(query));
     const active = group !== '' || query !== '';
-    map.getSource('uploaded-source').setData(
-      active ? {type: 'FeatureCollection', features: matches} : allData
-    );
+    const matching = new Set(matches);
+    for (const f of allData.features) {
+      f.properties._dimmed = active && !matching.has(f);
+    }
+    map.getSource('uploaded-source').setData(allData);
     resultText.textContent = active ? `${matches.length} Bäume gefunden` : '';
     zoomButton.disabled = !active || matches.length === 0;
     resetButton.hidden = !active;
