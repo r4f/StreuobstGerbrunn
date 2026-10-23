@@ -49,6 +49,7 @@ map.on('load', () => {
             // Data is now a GeoJSON object
             // You can use it to add a source and a layer
             addTreeLayer(data);
+            initSearch(data);
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
 });
@@ -307,7 +308,7 @@ map.on('click', 'trees', function(e) {
         let html = '<h3>' + (feature.properties['_display_name'] || 'Baum') + '</h3>';
         html += '<ul>';
         for (const key in feature.properties) {
-    	    if ((key === '_display_name') || (key === '_image') || (key === 'class') || (key === '@id')) {
+    	    if (key.startsWith('_') || (key === 'class') || (key === '@id')) {
     	    	continue
     	    } else if (key === 'website') {
                 html += `<li><b>${key}</b>: <a href=${feature.properties[key]}>${feature.properties[key].replace("https://", "")}</a></li>`;
@@ -329,3 +330,77 @@ map.on('mouseenter', 'trees', function() {
 map.on('mouseleave', 'trees', function() {
     map.getCanvas().style.cursor = '';
 });
+
+
+// ---------- Search by fruit type and cultivar ----------
+
+// Same as DISPLAY_CONDITION in .env, e.g. {"operator": "..."}; null = show all.
+const displayCondition = {{ display_condition_js }};
+
+function isDisplayed(props) {
+  if (!props._image) return false;
+  if (displayCondition === null) return true;
+  return Object.entries(displayCondition).every(([k, v]) => props[k] === v);
+}
+
+function cultivarOf(props) {
+  return [props['taxon:cultivar'], props['taxon:cultivar:de']].filter(Boolean).join(' / ');
+}
+
+function initSearch(allData) {
+  const panel = document.getElementById('search');
+  const groupSelect = document.getElementById('search-group');
+  const cultivarInput = document.getElementById('search-cultivar');
+  const cultivarList = document.getElementById('search-cultivar-list');
+  const resultText = document.getElementById('search-result');
+  const zoomButton = document.getElementById('search-zoom');
+  const resetButton = document.getElementById('search-reset');
+
+  const displayed = allData.features.filter(f => isDisplayed(f.properties));
+
+  // Fill the fruit type dropdown, most common first.
+  const groupCounts = {};
+  for (const f of displayed) {
+    const g = f.properties._group;
+    if (g) groupCounts[g] = (groupCounts[g] || 0) + 1;
+  }
+  for (const [g, n] of Object.entries(groupCounts).sort((a, b) => b[1] - a[1])) {
+    groupSelect.add(new Option(`${g} (${n})`, g));
+  }
+
+  let matches = displayed;
+
+  function update() {
+    const group = groupSelect.value;
+    const query = cultivarInput.value.trim().toLowerCase();
+    const inGroup = displayed.filter(f => !group || f.properties._group === group);
+
+    // Suggest only cultivars of the chosen fruit type.
+    const cultivars = [...new Set(inGroup.map(f => f.properties['taxon:cultivar']).filter(Boolean))].sort();
+    cultivarList.replaceChildren(...cultivars.map(c => new Option(c)));
+
+    matches = inGroup.filter(f => !query || cultivarOf(f.properties).toLowerCase().includes(query));
+    const active = group !== '' || query !== '';
+    map.getSource('uploaded-source').setData(
+      active ? {type: 'FeatureCollection', features: matches} : allData
+    );
+    resultText.textContent = active ? `${matches.length} Bäume gefunden` : '';
+    zoomButton.disabled = !active || matches.length === 0;
+    resetButton.hidden = !active;
+  }
+
+  groupSelect.addEventListener('change', update);
+  cultivarInput.addEventListener('input', update);
+  resetButton.addEventListener('click', () => {
+    groupSelect.value = '';
+    cultivarInput.value = '';
+    update();
+  });
+  zoomButton.addEventListener('click', () => {
+    const bounds = new maplibregl.LngLatBounds();
+    for (const f of matches) bounds.extend(f.geometry.coordinates);
+    map.fitBounds(bounds, {padding: 60, maxZoom: 19});
+    if (window.matchMedia('(max-width: 600px)').matches) panel.open = false;
+  });
+  panel.hidden = false;
+}

@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -17,8 +18,11 @@ display_condition = os.environ.get("DISPLAY_CONDITION")
 if display_condition is not None:
     key, value = display_condition.split("==")
     display_conditions = f'["==", "{key}", "{value}"],'
+    # Same condition for the search in main.js, as a JS object literal.
+    display_condition_js = json.dumps({key: value})
 else:
     display_conditions = ""
+    display_condition_js = "null"
 
 loader = FileSystemLoader(TEMPLATE_DIR)
 env = Environment(loader=loader)
@@ -48,6 +52,7 @@ context = dict(
     center_lat=CENTER_LAT,
     display_areas=display_areas,
     display_conditions=display_conditions,
+    display_condition_js=display_condition_js,
 )
 
 with open("deploy/main.js", "w") as f:

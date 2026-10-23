@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import sys
+import time
 from dataclasses import dataclass
 from enum import Enum
 from operator import itemgetter
@@ -13,7 +15,15 @@ BBOX_WEST = os.environ["BBOX_WEST"]
 BBOX_NORTH = os.environ["BBOX_NORTH"]
 BBOX_EAST = os.environ["BBOX_EAST"]
 
-overpass_url = "https://overpass-api.de/api/interpreter"
+# Tried in order. Overpass servers are often busy, so we retry and fall back.
+overpass_urls = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+]
+# Overpass rejects the default "python-requests" User-Agent with 406.
+headers = {"User-Agent": "Naschbaumkarte (https://github.com/r4f/StreuobstGerbrunn)"}
+local_trees_file = "data/trees.json"
 geojson_result_file = "deploy/trees.geojson"
 
 query_content = f"""
@@ -52,6 +62,9 @@ class Fruit:
     display_name: str
     image: Image
     conditions: list[dict]
+    # Used by the search on the map to combine related fruits, e.g. all cherries.
+    # Defaults to display_name.
+    group: str | None = None
 
     def one_condition_holds(self, tags):
         for condition in self.conditions:
@@ -92,16 +105,19 @@ fruits = [
     ),
     Fruit(
         display_name="Zwetschge",
+        group="Pflaume/Zwetschge",
         image=Image.Plum,
         conditions=[{Tag.Species: "Prunus domestica subsp. domestica"}],
     ),
     Fruit(
         display_name="Pflaume",
+        group="Pflaume/Zwetschge",
         image=Image.Plum,
         conditions=[{Tag.Species: "Prunus domestica"}],
     ),
     Fruit(
         display_name="Kirschpflaume",
+        group="Pflaume/Zwetschge",
         image=Image.Fallback_,
         conditions=[
             {Tag.Species: "Prunus cerasifera"},
@@ -109,6 +125,7 @@ fruits = [
     ),
     Fruit(
         display_name="Süßkirsche",
+        group="Kirsche",
         image=Image.Cherry,
         conditions=[
             {Tag.Species: "Prunus avium"},
@@ -117,6 +134,7 @@ fruits = [
     ),
     Fruit(
         display_name="Sauerkirsche",
+        group="Kirsche",
         image=Image.Cherry,
         conditions=[
             {Tag.Species: "Prunus cerasus"},
@@ -133,6 +151,7 @@ fruits = [
     ),
     Fruit(
         display_name="Weiße Maulbeere",
+        group="Maulbeere",
         image=Image.Mulberry,
         conditions=[
             {Tag.Species: "Morus alba"},
@@ -141,6 +160,7 @@ fruits = [
     ),
     Fruit(
         display_name="Schwarze Maulbeere",
+        group="Maulbeere",
         image=Image.Mulberry,
         conditions=[
             {Tag.Species: "Morus nigra"},
@@ -149,6 +169,7 @@ fruits = [
     ),
     Fruit(
         display_name="Rote Maulbeere",
+        group="Maulbeere",
         image=Image.Mulberry,
         conditions=[
             {Tag.Species: "Morus rubra"},
@@ -222,6 +243,7 @@ fruits = [
     ),
     Fruit(
         display_name="Schwarzer Holunder",
+        group="Holunder",
         image=Image.Fallback_,
         conditions=[
             {Tag.Species: "Sambucus nigra"},
@@ -251,15 +273,53 @@ fruits = [
 ]
 
 
+def query_overpass(query: str, attempts_per_server: int = 3) -> dict:
+    """Run the query, retrying on busy servers. Raises RuntimeError on failure."""
+    errors = []
+    for url in overpass_urls:
+        for attempt in range(attempts_per_server):
+            try:
+                response = requests.post(
+                    url, data={"data": query}, headers=headers, timeout=60
+                )
+            except requests.RequestException as e:
+                errors.append(f"{url}: {e}")
+                time.sleep(2**attempt)
+                continue
+            if response.status_code == 200:
+                try:
+                    result = response.json()
+                except ValueError:
+                    errors.append(f"{url}: response is not JSON")
+                    break
+                # Overpass reports query errors (e.g. timeouts) inside a 200 response.
+                if "remark" in result and not result.get("elements"):
+                    errors.append(f"{url}: {result['remark']}")
+                    break
+                return result
+            errors.append(f"{url}: HTTP {response.status_code}")
+            # 429 = rate limited, 5xx = busy. Anything else will not get better.
+            if response.status_code != 429 and response.status_code < 500:
+                break
+            time.sleep(2**attempt * 3)
+    raise RuntimeError("Overpass query failed:\n  " + "\n  ".join(errors))
+
+
 if os.environ.get("USE_LOCAL_TREES_FILE", "false") == "true":
-    with open("data/trees.json") as f:
+    with open(local_trees_file) as f:
         response_dict = json.load(f)
 else:
-    with requests.post(url=overpass_url, data=query_content) as response:
-        response_dict = json.loads(response.text)
-
-    with open("data/trees.json", "w") as f:
-        json.dump(response_dict, f, indent=2)
+    try:
+        response_dict = query_overpass(query_content)
+    except RuntimeError as e:
+        if not os.path.exists(local_trees_file):
+            sys.exit(str(e))
+        print(e, f"\nFalling back to cached {local_trees_file}.", file=sys.stderr)
+        with open(local_trees_file) as f:
+            response_dict = json.load(f)
+    else:
+        with open(local_trees_file, "w") as f:
+            json.dump(response_dict, f, indent=2)
 
 pattern = re.compile(r"(\d+\.?\d*)\s*(m|cm|mm)", re.IGNORECASE)
 
@@ -278,9 +338,9 @@ def normalize_length(length_value: str):
                 case "m":
                     return value
                 case "cm":
-                    return value * 10
+                    return value / 100
                 case "mm":
-                    return value * 100
+                    return value / 1000
         else:
             print("Could not match", length_value)
             return 0.5
@@ -298,6 +358,8 @@ for feature in response_dict["elements"]:
 
     if fruit is not None:
         tags["_display_name"] = fruit.display_name
+        if fruit.display_name:
+            tags["_group"] = fruit.group or fruit.display_name
         if fruit.image.value is not None:
             tags["_image"] = fruit.image.value
     if "circumference" in tags:
