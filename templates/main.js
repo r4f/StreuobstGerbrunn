@@ -10,6 +10,8 @@ const map = new maplibregl.Map({
   pitch: 0, // Sets the initial view to be straight down
   maxPitch: 0, // Prevents the user from changing the pitch
   bearing: 0,
+  // Collapsible attribution (an ⓘ button), also on wide screens.
+  attributionControl: {compact: true},
 })
 map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();
@@ -31,6 +33,12 @@ for (let i = 1; i <= 10; i++) {
 }
 
 map.on('load', () => {
+    // OSM attribution guidelines allow collapsing the attribution after a few
+    // seconds. MapLibre itself only collapses it when the map is dragged.
+    setTimeout(() => {
+      document.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show');
+    }, 5000);
+
     // Use fetch() to get the local GeoJSON file
     {% if display_areas %}
     fetch('areas.geojson')
