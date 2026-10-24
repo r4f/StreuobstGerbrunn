@@ -273,35 +273,56 @@ fruits = [
 ]
 
 
-def query_overpass(query: str, attempts_per_server: int = 3) -> dict:
-    """Run the query, retrying on busy servers. Raises RuntimeError on failure."""
+def query_overpass(
+    query: str, attempts_per_server: int = 3, max_seconds: float = 180
+) -> dict:
+    """Run the query, retrying on busy servers, for at most max_seconds.
+
+    Raises RuntimeError on failure.
+    """
+    deadline = time.monotonic() + max_seconds
     errors = []
+
+    def fail(message: str):
+        errors.append(message)
+        print(message, file=sys.stderr, flush=True)
+
+    def wait(seconds: float):
+        time.sleep(max(0, min(seconds, deadline - time.monotonic())))
+
     for url in overpass_urls:
         for attempt in range(attempts_per_server):
+            remaining = deadline - time.monotonic()
+            if remaining < 5:
+                fail(f"Gave up after {max_seconds:.0f} seconds.")
+                raise RuntimeError("Overpass query failed:\n  " + "\n  ".join(errors))
             try:
                 response = requests.post(
-                    url, data={"data": query}, headers=headers, timeout=60
+                    url,
+                    data={"data": query},
+                    headers=headers,
+                    timeout=min(60, remaining),
                 )
             except requests.RequestException as e:
-                errors.append(f"{url}: {e}")
-                time.sleep(2**attempt)
+                fail(f"{url}: {e}")
+                wait(2**attempt)
                 continue
             if response.status_code == 200:
                 try:
                     result = response.json()
                 except ValueError:
-                    errors.append(f"{url}: response is not JSON")
+                    fail(f"{url}: response is not JSON")
                     break
                 # Overpass reports query errors (e.g. timeouts) inside a 200 response.
                 if "remark" in result and not result.get("elements"):
-                    errors.append(f"{url}: {result['remark']}")
+                    fail(f"{url}: {result['remark']}")
                     break
                 return result
-            errors.append(f"{url}: HTTP {response.status_code}")
+            fail(f"{url}: HTTP {response.status_code}")
             # 429 = rate limited, 5xx = busy. Anything else will not get better.
             if response.status_code != 429 and response.status_code < 500:
                 break
-            time.sleep(2**attempt * 3)
+            wait(2**attempt * 3)
     raise RuntimeError("Overpass query failed:\n  " + "\n  ".join(errors))
 
 
