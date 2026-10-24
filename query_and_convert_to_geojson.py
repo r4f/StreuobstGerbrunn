@@ -273,10 +273,8 @@ fruits = [
 ]
 
 
-def query_overpass(
-    query: str, attempts_per_server: int = 3, max_seconds: float = 180
-) -> dict:
-    """Run the query, retrying on busy servers, for at most max_seconds.
+def query_overpass(query: str, rounds: int = 3, max_seconds: float = 180) -> dict:
+    """Run the query, trying each server in turn, for at most max_seconds.
 
     Raises RuntimeError on failure.
     """
@@ -287,11 +285,12 @@ def query_overpass(
         errors.append(message)
         print(message, file=sys.stderr, flush=True)
 
-    def wait(seconds: float):
-        time.sleep(max(0, min(seconds, deadline - time.monotonic())))
-
-    for url in overpass_urls:
-        for attempt in range(attempts_per_server):
+    # Servers that answered with an error that will not go away by retrying.
+    skip = set()
+    for round_ in range(rounds):
+        for url in overpass_urls:
+            if url in skip:
+                continue
             remaining = deadline - time.monotonic()
             if remaining < 5:
                 fail(f"Gave up after {max_seconds:.0f} seconds.")
@@ -301,28 +300,29 @@ def query_overpass(
                     url,
                     data={"data": query},
                     headers=headers,
-                    timeout=min(60, remaining),
+                    # 10 s to connect, so unreachable servers are skipped quickly.
+                    timeout=(min(10, remaining), min(90, remaining)),
                 )
             except requests.RequestException as e:
                 fail(f"{url}: {e}")
-                wait(2**attempt)
                 continue
             if response.status_code == 200:
                 try:
                     result = response.json()
                 except ValueError:
                     fail(f"{url}: response is not JSON")
-                    break
+                    continue
                 # Overpass reports query errors (e.g. timeouts) inside a 200 response.
                 if "remark" in result and not result.get("elements"):
                     fail(f"{url}: {result['remark']}")
-                    break
+                    continue
                 return result
             fail(f"{url}: HTTP {response.status_code}")
             # 429 = rate limited, 5xx = busy. Anything else will not get better.
             if response.status_code != 429 and response.status_code < 500:
-                break
-            wait(2**attempt * 3)
+                skip.add(url)
+        # Give busy servers a moment before the next round.
+        time.sleep(max(0, min(5 * (round_ + 1), deadline - time.monotonic())))
     raise RuntimeError("Overpass query failed:\n  " + "\n  ".join(errors))
 
 
