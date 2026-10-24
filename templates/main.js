@@ -13,6 +13,19 @@ const map = new maplibregl.Map({
   // Collapsible attribution (an ⓘ button), also on wide screens.
   attributionControl: {compact: true},
 })
+// Settings from the URL, e.g. ?refs=true&areas=false.
+// A parameter without value (?refs) counts as true.
+function urlFlag(name, defaultValue) {
+  const value = new URLSearchParams(window.location.search).get(name);
+  if (['true', '1', ''].includes(value)) return true;
+  if (['false', '0'].includes(value)) return false;
+  return defaultValue;
+}
+const searchEnabled = urlFlag('search', true);
+const showRefs = urlFlag('refs', false);
+// Areas are hidden by default when embedded, where space is tight.
+const showAreas = urlFlag('areas', !isInIframe());
+
 map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();
 map.keyboard.disableRotation();
@@ -41,7 +54,7 @@ map.on('load', () => {
 
     // Use fetch() to get the local GeoJSON file
     {% if display_areas %}
-    fetch('areas.geojson')
+    if (showAreas) fetch('areas.geojson')
         .then(response => response.json())
         .then(data => {
             // Data is now a GeoJSON object
@@ -273,7 +286,7 @@ function addTreeLayer(geoJSONcontent) {
       ]
 	});
 
-    map.addLayer({
+    if (showRefs) map.addLayer({
         "id":"trees-ref-nr",
         "type":"symbol",
         'source': 'uploaded-source',
@@ -356,11 +369,6 @@ map.on('mouseleave', 'trees', function() {
 
 
 // ---------- Search by fruit type and cultivar ----------
-
-// The search panel is shown unless the page is opened with ?search=false.
-const searchEnabled = !['false', '0'].includes(
-  new URLSearchParams(window.location.search).get('search')
-);
 
 // Same as DISPLAY_CONDITION in .env, e.g. {"operator": "..."}; null = show all.
 const displayCondition = {{ display_condition_js }};
