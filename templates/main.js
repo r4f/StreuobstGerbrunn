@@ -297,17 +297,19 @@ function addTreeLayer(geoJSONcontent) {
 
 }
 
-// Add geolocate control to the map.
-map.addControl(
-    new maplibregl.GeolocateControl({
-        positionOptions: {
-            enableHighAccuracy: true
-        },
-        trackUserLocation: true
-    })
-);
-// Fullscreen the whole page, not just the map, so the search panel stays visible.
-map.addControl(new maplibregl.FullscreenControl({container: document.body}));
+// Location and fullscreen usually do not work inside an iframe, so hide them there.
+if (!isInIframe()) {
+    map.addControl(
+        new maplibregl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true
+        })
+    );
+    // Fullscreen the whole page, not just the map, so the search panel stays visible.
+    map.addControl(new maplibregl.FullscreenControl({container: document.body}));
+}
 
 let nav = new maplibregl.NavigationControl();
 map.addControl(nav, 'top-right');
